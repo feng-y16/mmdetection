@@ -73,6 +73,38 @@ def visualize_modification(args, model, imgs, index, metadata, gt_bboxes, gt_lab
         # mmcv.imwrite(img, save_path)
 
 
+def generate_data(args, imgs, is_attack, metadata, gt_bboxes, gt_labels=None):
+    imgs = imgs.permute(0, 2, 3, 1)[:, :, :, [2, 1, 0]]
+    num_of_imgs = imgs.size()[0]
+    imgs = imgs.detach().cpu().numpy()
+    for img_index in range(num_of_imgs):
+        img_mean = metadata[img_index]['img_norm_cfg']['mean'][::-1]
+        img_std = metadata[img_index]['img_norm_cfg']['std'][::-1]
+        imgs[img_index] = imgs[img_index] * img_std + img_mean
+        if is_attack:
+            if not os.path.exists(args.save_path[:-7] + 'attack'):
+                os.makedirs(args.save_path[:-7] + 'attack')
+            save_path = args.save_path[:-7] + 'attack' + '/' + metadata[img_index]['filename'][-16:]
+        else:
+            if not os.path.exists(args.save_path[:-7] + 'original'):
+                os.makedirs(args.save_path[:-7] + 'original')
+            save_path = args.save_path[:-7] + 'original' + '/' + metadata[img_index]['filename'][-16:]
+            if not os.path.exists(args.save_path[:-7] + 'labels'):
+                os.makedirs(args.save_path[:-7] + 'labels')
+            file_handle = open(args.save_path[:-7] + 'labels/' + metadata[img_index]['filename'][-16:-4] +
+                               '.txt', mode='w')
+            for label_index in range(gt_bboxes[img_index].size()[0]):
+                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][0])) + ' ')
+                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][1])) + ' ')
+                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][2])) + ' ')
+                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][3])) + ' ')
+                file_handle.writelines(str(int(gt_labels[img_index][label_index])))
+                file_handle.writelines('\n')
+            file_handle.close()
+        img = mmcv.imread(imgs[img_index])
+        mmcv.imwrite(img, save_path)
+
+
 def visualize_img(model, img, save_path):
     result = inference_detector(model, img)
     show_result(img, result, model.CLASSES, show=False, out_file=save_path)

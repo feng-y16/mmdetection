@@ -48,6 +48,7 @@ def parse_args():
     parser.add_argument('--kernel', type=str, default="Gaussian")
     parser.add_argument('--kernel_size', type=int, default=0)
     parser.add_argument('--resume_experiment', type=int, default=0)
+    parser.add_argument('--generate_data', action='store_true', help='whether or not to generate data')
     args = parser.parse_args()
     if args.black_box_model_name is None:
         args.black_box_model_name = args.model_name

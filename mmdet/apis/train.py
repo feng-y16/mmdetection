@@ -13,7 +13,8 @@ from mmdet.datasets import DATASETS, build_dataloader
 from mmdet.models import RPN
 from .env import get_root_logger
 import pdb
-from tools.attack import load_model, visualize_all_images, visualize_all_images_plus_acc, visualize_modification
+from tools.attack import load_model, visualize_all_images, visualize_all_images_plus_acc, visualize_modification, \
+    generate_data
 import datetime
 import numpy as np
 from tqdm import tqdm
@@ -334,6 +335,10 @@ def attack_detector(args, model, cfg, dataset):
                     visualize_modification(args, infer_model, copy.deepcopy(imgs.data[j]), j,
                                            data['img_meta'].data[j], data['gt_bboxes'].data[j],
                                            data['gt_labels'].data[j])
+            if args.generate_data:
+                assert args.model_name != 'rpn_r50_fpn_1x'
+                generate_data(args, copy.deepcopy(imgs.data[j]), False, data['img_meta'].data[j],
+                              data['gt_bboxes'].data[j], data['gt_labels'].data[j])
             imgs.data[j] = imgs.data[j].detach()
             imgs.data[j].requires_grad = True
             number_of_images += imgs.data[j].size()[0]
