@@ -81,24 +81,39 @@ def generate_data(args, imgs, is_attack, metadata, gt_bboxes, gt_labels=None):
         img_mean = metadata[img_index]['img_norm_cfg']['mean'][::-1]
         img_std = metadata[img_index]['img_norm_cfg']['std'][::-1]
         imgs[img_index] = imgs[img_index] * img_std + img_mean
+        height, width, _ = np.shape(imgs[img_index])
         if is_attack:
-            if not os.path.exists(args.save_path[:-7] + 'attack'):
-                os.makedirs(args.save_path[:-7] + 'attack')
-            save_path = args.save_path[:-7] + 'attack' + '/' + metadata[img_index]['filename'][-16:]
+            if not os.path.exists(args.save_path[:-7] + 'images/attack'):
+                os.makedirs(args.save_path[:-7] + 'images/attack')
+            save_path = args.save_path[:-7] + 'images/attack/' + metadata[img_index]['filename'][-16:]
         else:
-            if not os.path.exists(args.save_path[:-7] + 'original'):
-                os.makedirs(args.save_path[:-7] + 'original')
-            save_path = args.save_path[:-7] + 'original' + '/' + metadata[img_index]['filename'][-16:]
-            if not os.path.exists(args.save_path[:-7] + 'labels'):
-                os.makedirs(args.save_path[:-7] + 'labels')
-            file_handle = open(args.save_path[:-7] + 'labels/' + metadata[img_index]['filename'][-16:-4] +
+            with open('/home/fengyao/yolov3/data/coco_before_attack.txt', mode='a') as f:
+                f.writelines('/home/fengyao/mmdetection' + args.save_path[1:-7] + 'images/original'
+                             + '/' + metadata[img_index]['filename'][-16:])
+                f.writelines('\n')
+            with open('/home/fengyao/yolov3/data/coco_under_attack.txt', mode='a') as f:
+                f.writelines('/home/fengyao/mmdetection' + args.save_path[1:-7] + 'images/attack'
+                             + '/' + metadata[img_index]['filename'][-16:])
+                f.writelines('\n')
+            if not os.path.exists(args.save_path[:-7] + 'images/original'):
+                os.makedirs(args.save_path[:-7] + 'images/original')
+            save_path = args.save_path[:-7] + 'images/original/' + metadata[img_index]['filename'][-16:]
+            if not os.path.exists(args.save_path[:-7] + 'labels/original'):
+                os.makedirs(args.save_path[:-7] + 'labels/original')
+            file_handle = open(args.save_path[:-7] + 'labels/original/' + metadata[img_index]['filename'][-16:-4] +
                                '.txt', mode='w')
             for label_index in range(gt_bboxes[img_index].size()[0]):
-                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][0])) + ' ')
-                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][1])) + ' ')
-                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][2])) + ' ')
-                file_handle.writelines(str(float(gt_bboxes[img_index][label_index][3])) + ' ')
-                file_handle.writelines(str(int(gt_labels[img_index][label_index])))
+                assert gt_labels[img_index][label_index] >= 1
+                assert gt_labels[img_index][label_index] <= 80
+                file_handle.writelines(str(int(gt_labels[img_index][label_index] - 1)) + ' ')
+                file_handle.writelines(str(float((gt_bboxes[img_index][label_index][0] +
+                                                  gt_bboxes[img_index][label_index][2]) / (2 * width))) + ' ')
+                file_handle.writelines(str(float((gt_bboxes[img_index][label_index][1] +
+                                                  gt_bboxes[img_index][label_index][3]) / (2 * height))) + ' ')
+                file_handle.writelines(str(float((gt_bboxes[img_index][label_index][2] -
+                                                  gt_bboxes[img_index][label_index][0]) / width)) + ' ')
+                file_handle.writelines(str(float((gt_bboxes[img_index][label_index][3] -
+                                                  gt_bboxes[img_index][label_index][1]) / height)) + ' ')
                 file_handle.writelines('\n')
             file_handle.close()
         img = mmcv.imread(imgs[img_index])
