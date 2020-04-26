@@ -348,7 +348,6 @@ def attack_detector(args, model, cfg, dataset):
                 assert args.model_name != 'rpn_r50_fpn_1x'
                 generate_data(args, copy.deepcopy(imgs.data[j]), False, data['img_meta'].data[j],
                               data['gt_bboxes'].data[j], data['gt_labels'].data[j])
-
             imgs.data[j] = imgs.data[j].detach()
             imgs.data[j].requires_grad = True
             number_of_images += imgs.data[j].size()[0]
@@ -419,28 +418,28 @@ def attack_detector(args, model, cfg, dataset):
                 last_update_direction[j] = update_direction
             model.zero_grad()
             pbar_inner.update(1)
-        for j in range(0, cfg.gpus):
-            if args.model_name == 'rpn_r50_fpn_1x':
-                t = ThreadingWithResult(visualize_all_images_plus_acc, args=(args, infer_model,
-                                                                             imgs.data[j], raw_imgs.data[j],
-                                                                             data['img_meta'].data[j],
-                                                                             data['gt_bboxes'].data[j],
-                                                                             MAP_data))
-            else:
-                t = ThreadingWithResult(visualize_all_images_plus_acc, args=(args, infer_model,
-                                                                             imgs.data[j], raw_imgs.data[j],
-                                                                             data['img_meta'].data[j],
-                                                                             data['gt_bboxes'].data[j],
-                                                                             MAP_data,
-                                                                             data['gt_labels'].data[j]))
-            t.start()
-            t.join()
-            statistics_result = t.get_result()
-            if statistics_result[0][0] >= 0:
-                statistics += statistics_result[0]
-                MAP_data = statistics_result[1]
-            else:
-                print("Error! Results were not fetched!")
+        # for j in range(0, cfg.gpus):
+        #     if args.model_name == 'rpn_r50_fpn_1x':
+        #         t = ThreadingWithResult(visualize_all_images_plus_acc, args=(args, infer_model,
+        #                                                                      imgs.data[j], raw_imgs.data[j],
+        #                                                                      data['img_meta'].data[j],
+        #                                                                      data['gt_bboxes'].data[j],
+        #                                                                      MAP_data))
+        #     else:
+        #         t = ThreadingWithResult(visualize_all_images_plus_acc, args=(args, infer_model,
+        #                                                                      imgs.data[j], raw_imgs.data[j],
+        #                                                                      data['img_meta'].data[j],
+        #                                                                      data['gt_bboxes'].data[j],
+        #                                                                      MAP_data,
+        #                                                                      data['gt_labels'].data[j]))
+        #     t.start()
+        #     t.join()
+        #     statistics_result = t.get_result()
+        #     if statistics_result[0][0] >= 0:
+        #         statistics += statistics_result[0]
+        #         MAP_data = statistics_result[1]
+        #     else:
+        #         print("Error! Results were not fetched!")
         for j in range(0, len(imgs.data)):
             generate_data(args, copy.deepcopy(imgs.data[j]), True, data['img_meta'].data[j],
                           data['gt_bboxes'].data[j], data['gt_labels'].data[j])
@@ -448,8 +447,10 @@ def attack_detector(args, model, cfg, dataset):
     pbar_outer.close()
     pbar_inner.close()
     if args.generate_data and args.experiment_index == args.resume_experiment:
-        args.MAP_before_attack = test_attack(False)
-    args.MAP_under_attack = test_attack()
+        args.MAP_before_attack, args.class_accuracy_before_attack, args.IoU_accuracy_before_attack,\
+            args.IoU_accuracy_before_attack2 = test_attack(False)
+    args.MAP_under_attack, args.class_accuracy_under_attack\
+        , args.IoU_accuracy_under_attack, args.IoU_accuracy_under_attack2 = test_attack()
     if args.visualize and args.num_attack_iter > 1:
         dot_product /= (args.num_attack_iter - 1) * number_of_images / args.imgs_per_gpu
         print("average normalized dot product = ", dot_product)
@@ -460,18 +461,19 @@ def attack_detector(args, model, cfg, dataset):
     if args.neglect_raw_stat and args.experiment_index > args.resume_experiment:
         pass
     else:
-        args.class_accuracy_before_attack = 100 * statistics[0]
-        args.IoU_accuracy_before_attack = 100 * statistics[1]
-        args.IoU_accuracy_before_attack2 = 100 * statistics[2]
+        pass
+        # args.class_accuracy_before_attack = 100 * statistics[0]
+        # args.IoU_accuracy_before_attack = 100 * statistics[1]
+        # args.IoU_accuracy_before_attack2 = 100 * statistics[2]
         # if MAP_data[0] is None:
         #     args.MAP_before_attack = 0
         # else:
         #     args.MAP_before_attack = eval_map_attack(MAP_data[0][0], MAP_data[0][1], len(class_names),
         #                                              scale_ranges=None, iou_thr=0.5,
         #                                              dataset=class_names, print_summary=True)[0]
-    args.class_accuracy_under_attack = 100 * statistics[3]
-    args.IoU_accuracy_under_attack = 100 * statistics[4]
-    args.IoU_accuracy_under_attack2 = 100 * statistics[5]
+    # args.class_accuracy_under_attack = 100 * statistics[3]
+    # args.IoU_accuracy_under_attack = 100 * statistics[4]
+    # args.IoU_accuracy_under_attack2 = 100 * statistics[5]
     # if MAP_data[1] is None:
     #     args.MAP_under_attack = 0
     # else:

@@ -52,8 +52,8 @@ def parse_args():
     args = parser.parse_args()
     if args.black_box_model_name is None:
         args.black_box_model_name = args.model_name
-    args.config_black_box = args.config + args.black_box_model_name + '.py'
-    args.config += args.model_name + '.py'
+    args.config_black_box = args.config + args.black_box_model_name + '_jun9.py'
+    args.config += args.model_name + '_jun9.py'
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
     if 'RANK' not in os.environ:
