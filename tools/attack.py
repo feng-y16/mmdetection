@@ -20,6 +20,7 @@ import pandas as pd
 import datetime
 import itertools
 import mmcv
+from mmcv.runner import load_checkpoint
 
 
 def load_model(args):
@@ -232,6 +233,7 @@ def attack(args, datasets):
         logger.info('Set random seed to {}'.format(args.seed))
         set_random_seed(args.seed)
     model = build_detector(cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
+    _ = load_checkpoint(model, args.model_path)
     if datasets is None:
         datasets = [build_dataset(cfg.data.train)]
     # if len(cfg.workflow) == 2:
