@@ -277,7 +277,7 @@ if __name__ == "__main__":
                          [['loss_rpn_bbox', 'loss_cls']],
                          [10],
                          [0, 1, 2],
-                         ['Gaussian'],
+                         ['Uniform', 'Linear', 'Gaussian'],
                          [0, 5, 11, 15]]
     if args_raw.model_name == 'retinanet_r50_fpn_1x':
         search_values[1] = [['loss_cls']]
