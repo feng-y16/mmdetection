@@ -279,6 +279,13 @@ if __name__ == "__main__":
                          [1],
                          ['Uniform', 'Linear', 'Gaussian'],
                          [0, 5, 11, 15]]
+    if args_raw.DAG:
+        search_values = [[16.0],
+                         [['loss_cls']],
+                         [10],
+                         [1],
+                         ['Gaussian'],
+                         [0]]
     if args_raw.model_name == 'retinanet_r50_fpn_1x':
         search_values[1] = [['loss_cls']]
     # search_values = [[16.0],
@@ -300,6 +307,8 @@ if __name__ == "__main__":
         save_file_name = str(datetime.datetime.now()) + '.xlsx'
     else:
         save_file_name = str(datetime.datetime.now()) + '_attack_' + str(args_search.black_box_model_name) + '.xlsx'
+    if args_raw.DAG:
+        save_file_name = save_file_name[:-5] + '_DAG.xlsx'
     loaded_datasets = None
     experiment_index = 0
     for search_value in itertools.product(*search_values):
