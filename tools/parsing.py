@@ -38,6 +38,7 @@ def parse_args():
                                                                         'calculation of raw data')
     parser.add_argument('--model_path', type=str, default=None)
     parser.add_argument('--DIM', action='store_true', default=False, help='whether or not to use DIM')
+    parser.add_argument('--DAG', action='store_true', default=False, help='whether or not to use DAG')
     parser.add_argument('--black_box_model_path', type=str, default=None)
     parser.add_argument('--black_box_model_name', type=str, default=None)
     parser.add_argument('--num_attack_iter', type=int, default=5)
